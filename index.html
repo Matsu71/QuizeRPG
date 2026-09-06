@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#111827" />
+  <title>QuizRPG Demo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">LEARN × BATTLE × ADVENTURE</p>
+        <h1>QUIZ RPG <span>DEMO</span></h1>
+      </div>
+      <button id="resetButton" class="ghost-button" type="button">データ初期化</button>
+    </header>
+
+    <main>
+      <section id="setupView" class="panel setup-panel">
+        <div class="hero-copy">
+          <p class="badge">最初の学習セットは1つ無料</p>
+          <h2>学ぶ分野を選んで、冒険を始めよう。</h2>
+          <p>
+            RPG本編は同じまま、学習セットだけを差し替えます。ゲームを進めるほど出題難易度が上がり、
+            間違えた問題は後から復習として再登場します。
+          </p>
+        </div>
+
+        <div id="learningSetGrid" class="learning-set-grid" aria-label="学習セット一覧"></div>
+
+        <div class="setup-footer">
+          <div>
+            <p class="muted">選択中</p>
+            <strong id="selectedSetLabel">未選択</strong>
+          </div>
+          <button id="startButton" class="primary-button" type="button" disabled>このセットで冒険開始</button>
+        </div>
+      </section>
+
+      <section id="gameView" class="game-layout hidden" aria-live="polite">
+        <aside class="side-panel panel">
+          <div class="profile-row">
+            <div class="pixel-avatar hero-avatar" aria-hidden="true">
+              <span class="pixel-head"></span>
+              <span class="pixel-body"></span>
+              <span class="pixel-sword"></span>
+            </div>
+            <div>
+              <p class="muted">冒険者</p>
+              <h2>アレン</h2>
+              <p id="playerLevelLabel" class="small-label">Lv. 1</p>
+            </div>
+          </div>
+
+          <div class="stat-block">
+            <div class="stat-line"><span>HP</span><strong id="playerHpText">100 / 100</strong></div>
+            <div class="bar"><div id="playerHpBar" class="bar-fill hp-fill"></div></div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-line"><span>EXP</span><strong id="playerExpText">0 / 100</strong></div>
+            <div class="bar"><div id="playerExpBar" class="bar-fill exp-fill"></div></div>
+          </div>
+
+          <div class="chapter-card">
+            <span class="muted">現在地</span>
+            <strong id="chapterLabel">第1章 はじまりの草原</strong>
+            <div class="chapter-progress"><span id="stageDots"></span></div>
+          </div>
+
+          <div class="learning-card">
+            <span class="muted">学習セット</span>
+            <strong id="activeSetLabel">-</strong>
+            <p id="learningTierLabel">Learning Tier 1</p>
+            <button id="changeSetButton" class="secondary-button" type="button">学習セット変更</button>
+          </div>
+
+          <div class="mini-stats">
+            <div><span>正答率</span><strong id="accuracyLabel">-</strong></div>
+            <div><span>連続正解</span><strong id="streakLabel">0</strong></div>
+            <div><span>復習待ち</span><strong id="reviewLabel">0</strong></div>
+          </div>
+        </aside>
+
+        <section class="battle-panel panel">
+          <div class="battle-meta">
+            <div>
+              <p id="stageLabel" class="eyebrow">STAGE 1-1</p>
+              <h2 id="enemyName">森のスライム</h2>
+            </div>
+            <span id="difficultyBadge" class="difficulty-badge">基礎</span>
+          </div>
+
+          <div id="battleScene" class="battle-scene">
+            <div class="scene-sky"></div>
+            <div class="scene-ground"></div>
+            <div class="enemy-wrap">
+              <div id="enemySprite" class="pixel-enemy enemy-slime" aria-hidden="true">
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div class="enemy-hud">
+                <div class="stat-line"><span>ENEMY HP</span><strong id="enemyHpText">60 / 60</strong></div>
+                <div class="bar enemy-bar"><div id="enemyHpBar" class="bar-fill enemy-fill"></div></div>
+              </div>
+            </div>
+            <div id="damagePop" class="damage-pop hidden">-20</div>
+            <div class="hero-in-scene pixel-avatar hero-avatar" aria-hidden="true">
+              <span class="pixel-head"></span>
+              <span class="pixel-body"></span>
+              <span class="pixel-sword"></span>
+            </div>
+          </div>
+
+          <div id="questionCard" class="question-card">
+            <div class="question-topline">
+              <span id="questionCategory">基礎問題</span>
+              <span id="questionNumber">Q1</span>
+            </div>
+            <h3 id="questionText">問題を読み込み中...</h3>
+            <div id="answerGrid" class="answer-grid"></div>
+            <div id="feedback" class="feedback hidden"></div>
+          </div>
+
+          <div class="battle-footer">
+            <div>
+              <span class="muted">BATTLE TIP</span>
+              <p id="battleTip">正解すると攻撃。不正解だと敵の反撃を受けます。</p>
+            </div>
+            <button id="nextButton" class="primary-button hidden" type="button">次へ</button>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="setDialog" class="set-dialog">
+    <div class="dialog-head">
+      <div>
+        <p class="eyebrow">LEARNING SET</p>
+        <h2>学習セットを変更</h2>
+      </div>
+      <button id="closeDialogButton" class="icon-button" type="button" aria-label="閉じる">×</button>
+    </div>
+    <p class="muted">各セットの習熟度は独立して保存されます。追加セットは製品版では買い切りを想定しています。</p>
+    <div id="dialogSetGrid" class="learning-set-grid compact"></div>
+  </dialog>
+
+  <dialog id="resultDialog" class="result-dialog">
+    <p class="eyebrow">STAGE CLEAR</p>
+    <h2 id="resultTitle">勝利！</h2>
+    <p id="resultText"></p>
+    <div class="reward-grid">
+      <div><span>EXP</span><strong id="rewardExp">+0</strong></div>
+      <div><span>正解</span><strong id="rewardCorrect">0</strong></div>
+      <div><span>習熟度</span><strong id="rewardTier">Tier 1</strong></div>
+    </div>
+    <button id="continueButton" class="primary-button" type="button">冒険を続ける</button>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
